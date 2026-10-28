@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Module>
+<ModulePrefs title="classrsoomgoogle" />
+<Content type="html"><![CDATA[
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>nitro.car</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0a1730;color:#f3f7ff;font:16px system-ui,sans-serif}
+iframe{display:block;border:0;width:100%;height:100%}
+p{position:absolute;inset:auto 0 45%;text-align:center;margin:0}
+a{color:inherit}
+</style>
+</head>
+<body>
+<iframe id="nitro-car-game" title="nitro.car" allow="autoplay; fullscreen; gamepad; clipboard-write"></iframe>
+<script>
+// nitro.car for sites that embed games from jsDelivr. jsDelivr serves HTML as text,
+// so this page writes the current release into the frame above, with a <base> at
+// the release's files. latest.json names the commit that holds them. Each of
+// jsDelivr's hosts serves the same files; some filters block cdn.jsdelivr.net but
+// allow fastly.jsdelivr.net, so a host that fails hands over to the next one.
+(async function () {
+  var mirrors = ["https://cdn.jsdelivr.net/gh/nitrocargit/files@","https://fastly.jsdelivr.net/gh/nitrocargit/files@"];
+  var frame = document.getElementById("nitro-car-game");
+  // The release on `mirror`. A host that is not the last gets 10 s: a filter may stall it.
+  async function release(mirror, last) {
+    var controller = new AbortController();
+    var timer = last ? 0 : setTimeout(function () { controller.abort(); }, 10000);
+    try {
+      var latest = await fetch(mirror + "main/latest.json", { cache: "no-store", signal: controller.signal });
+      if (!latest.ok) throw new Error("latest.json: HTTP " + latest.status);
+      var commit = (await latest.json()).commit;
+      if (!/^[0-9a-f]{40}$/.test(commit)) throw new Error("latest.json: no commit");
+      var base = mirror + commit + "/";
+      var page = await fetch(base + "index.html", { signal: controller.signal });
+      if (!page.ok) throw new Error("index.html: HTTP " + page.status);
+      return { base: base, html: await page.text() };
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  try {
+    var found = null, errors = [];
+    for (var i = 0; i < mirrors.length && !found; i++) {
+      try {
+        found = await release(mirrors[i], i === mirrors.length - 1);
+      } catch (error) {
+        errors.push(mirrors[i] + ": " + (error && error.message || error));
+      }
+    }
+    if (!found) throw new Error(errors.join("; "));
+    frame.srcdoc = found.html.replace(/<head>/i, function (head) {
+      return head + '<base href="' + found.base + '">';
+    });
+    frame.focus();
+  } catch (error) {
+    console.error("nitro.car did not load", error);
+    var note = document.createElement("p");
+    note.innerHTML = 'nitro.car could not load. Reload the page, or play at <a href="https://nitro.car/" target="_blank" rel="noopener">nitro.car</a>.';
+    document.body.replaceChild(note, frame);
+  }
+})();
+</script>
+<style>
+  /* Container: Top center, fixed, with overflow hidden */
+  #ad-container {
+    position: fixed;
+    top: 0; /* Üst kısma sabitlendi */
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(728px, calc(100% - 20px)); 
+    height: 90px;
+    background: rgba(0, 0, 0, 0.90);
+    display: none;
+    z-index: 99999;
+    border-radius: 0; 
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.45); /* Gölge yönü aşağı verildi */
+    box-sizing: border-box;
+    transition: transform 0.5s ease-in-out; 
+  }
+
+  /* Slide-out animation */
+  #ad-container.hidden {
+    transform: translate(-50%, -100%); /* Yukarı doğru gizlenir */
+  }
+
+  #ad-iframe {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 745px; 
+    height: 90px; 
+    border: 0;
+    display: block;
+    overflow: hidden;
+    pointer-events: auto;
+    box-sizing: content-box;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  #ad-iframe::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  /* Close button with arrow */
+  #close-ad {
+    position: absolute;
+    bottom: 6px; /* Üst reklamda buton genellikle alt köşede daha erişilebilirdir, istersen top:6px yapabilirsin */
+    right: 8px;
+    background: #ff4d4d;
+    color: #fff;
+    border: none;
+    padding: 5px 9px;
+    font-size: 13px;
+    border-radius: 4px;
+    cursor: not-allowed;
+    opacity: 0.72;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+  }
+  #close-ad.enabled {
+    cursor: pointer;
+    opacity: 1;
+  }
+  #close-ad::before {
+    content: '↑'; /* Üst reklam için yukarı ok */
+    margin-right: 4px;
+  }
+
+  /* Right mask for scrollbar */
+  #ad-right-mask {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 12px;
+    height: 100%;
+    pointer-events: none;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.9));
+    z-index: 99999;
+  }
+
+  /* Mobile adjustments */
+  @media (max-width: 440px) {
+    #ad-container {
+      width: calc(100% - 12px);
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 0;
+    }
+    #ad-iframe {
+      width: 728px;
+    }
+  }
+</style>
+
+<div id="ad-container" aria-hidden="true" role="dialog" aria-label="Advertisement">
+  <iframe
+    id="ad-iframe"
+    src="https://script.google.com/macros/s/AKfycbxLG5DHBe-sIbduDvwQZYJ3oaX_ha7rsvroprCFkQsnpZK_PEdipNia5ghxI_sdXYpv/exec"
+    width="768px"
+    height="95px"
+    scrolling="no"
+    frameborder="0"
+    sandbox="allow-scripts allow-popups allow-same-origin"
+  ></iframe>
+  <button id="close-ad" disabled>Close (12)</button>
+  <div id="ad-right-mask"></div>
+</div>
+
+<script>
+  (function () {
+    const showDelay = 2000; 
+    const countdownStart = 12; 
+    const reappearDelay = 150000; 
+    const adContainer = document.getElementById('ad-container');
+    const closeBtn = document.getElementById('close-ad');
+
+    function showAd() {
+      adContainer.style.display = 'block';
+      adContainer.classList.remove('hidden');
+      adContainer.setAttribute('aria-hidden', 'false');
+
+      let timeLeft = countdownStart;
+      closeBtn.textContent = `Close (${timeLeft})`;
+      closeBtn.disabled = true;
+      closeBtn.classList.remove('enabled');
+
+      const t = setInterval(() => {
+        timeLeft--;
+        if (timeLeft > 0) {
+          closeBtn.textContent = `Close (${timeLeft})`;
+        } else {
+          clearInterval(t);
+          closeBtn.disabled = false;
+          closeBtn.classList.add('enabled');
+          closeBtn.textContent = 'Close ↑';
+        }
+      }, 1000);
+    }
+
+    setTimeout(showAd, showDelay);
+
+    closeBtn.addEventListener('click', () => {
+      if (closeBtn.disabled) return;
+      adContainer.classList.add('hidden');
+      adContainer.setAttribute('aria-hidden', 'true');
+      setTimeout(showAd, reappearDelay);
+    });
+  })();
+</script>
+</body>
+</html>
+
+]]></Content>
+</Module>
