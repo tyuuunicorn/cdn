@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Module>
+<ModulePrefs title="classroom" />
+<Content type="html"><![CDATA[
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no"/>
+<style>
+html,body{margin:0;padding:0;width:100%;height:100%;background:#000;overflow:hidden;touch-action:none}
+canvas{touch-action:none}
+#boot{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;background:#0b0f14;color:#e6edf3;font:600 13px/1 system-ui,-apple-system,sans-serif;letter-spacing:.14em}
+#boot.gone{display:none}
+#bootbar{width:min(320px,62vw);height:6px;border-radius:999px;background:#1d2733;overflow:hidden}
+#bootfill{width:0%;height:100%;border-radius:inherit;background:#e6edf3;transition:width .2s}
+#boot.err{color:#ff9a9a}
+#boot button{font:600 12px/1 system-ui,sans-serif;letter-spacing:.06em;padding:10px 24px;border:0;border-radius:999px;background:#e6edf3;color:#0b0f14;cursor:pointer;display:none}
+#boot.err button{display:block}
+</style>
+</head>
+<body>
+<div id="boot"><div id="boottxt">LOADING 0%</div><div id="bootbar"><div id="bootfill"></div></div><button onclick="location.reload()">RELOAD</button></div>
+
+<script>
+window.GAME_FILES = {
+  "box2d.wasm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/box2d.wasm",
+  "box2d.wasm.js": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/box2d.wasm.js",
+  "data.json": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/data.json",
+  "images/bg1-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/bg1-sheet0.png",
+  "images/bg2-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/bg2-sheet0.png",
+  "images/bgm2-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/bgm2-sheet0.png",
+  "images/bgm3-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/bgm3-sheet0.png",
+  "images/bgm4-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/bgm4-sheet0.png",
+  "images/bgm5-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/bgm5-sheet0.png",
+  "images/bgm6-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/bgm6-sheet0.png",
+  "images/bgm7-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/bgm7-sheet0.png",
+  "images/birds-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/birds-sheet0.png",
+  "images/blackpage-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/blackpage-sheet0.png",
+  "images/cloads-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/cloads-sheet0.png",
+  "images/flasheffect-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/flasheffect-sheet0.png",
+  "images/inrobg-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/inrobg-sheet0.png",
+  "images/overpage1-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/overpage1-sheet0.png",
+  "images/overpage2-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/overpage2-sheet0.png",
+  "images/p1head-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/p1head-sheet0.png",
+  "images/p1healbar-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/p1healbar-sheet0.png",
+  "images/p1healbarbg-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/p1healbarbg-sheet0.png",
+  "images/p2head-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/p2head-sheet0.png",
+  "images/p2healbar-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/p2healbar-sheet0.png",
+  "images/p2healbarbg-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/p2healbarbg-sheet0.png",
+  "images/pausepage-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/pausepage-sheet0.png",
+  "images/phparticle-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/phparticle-sheet0.png",
+  "images/shared-0-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/shared-0-sheet0.png",
+  "images/shared-0-sheet1.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/shared-0-sheet1.png",
+  "images/shared-1-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/shared-1-sheet0.png",
+  "images/shared-1-sheet1.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/shared-1-sheet1.png",
+  "images/shared-1-sheet2.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/shared-1-sheet2.png",
+  "images/shared-2-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/shared-2-sheet0.png",
+  "images/shared-2-sheet1.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/shared-2-sheet1.png",
+  "images/shared-2-sheet2.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/shared-2-sheet2.png",
+  "images/shared-2-sheet3.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/shared-2-sheet3.png",
+  "images/sunlight-sheet0.png": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/images/sunlight-sheet0.png",
+  "media/bowslow.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/bowslow.webm",
+  "media/button.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/button.webm",
+  "media/confeti.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/confeti.webm",
+  "media/cop1.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/cop1.webm",
+  "media/cop2.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/cop2.webm",
+  "media/cop3.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/cop3.webm",
+  "media/die1.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/die1.webm",
+  "media/die2.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/die2.webm",
+  "media/expo.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/expo.webm",
+  "media/gamemusic.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/gamemusic.webm",
+  "media/head.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/head.webm",
+  "media/headicon.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/headicon.webm",
+  "media/headshoot.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/headshoot.webm",
+  "media/hit1.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/hit1.webm",
+  "media/hit2.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/hit2.webm",
+  "media/hit3.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/hit3.webm",
+  "media/hit4.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/hit4.webm",
+  "media/hover2.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/hover2.webm",
+  "media/kus1.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/kus1.webm",
+  "media/kus2.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/kus2.webm",
+  "media/kus3.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/kus3.webm",
+  "media/menu2.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/menu2.webm",
+  "media/music4.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/music4.webm",
+  "media/ok1.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/ok1.webm",
+  "media/ok2.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/ok2.webm",
+  "media/ok3.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/ok3.webm",
+  "media/ok4.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/ok4.webm",
+  "media/olumses.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/olumses.webm",
+  "media/pain1.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/pain1.webm",
+  "media/pain2.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/pain2.webm",
+  "media/pain3.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/pain3.webm",
+  "media/pain4.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/pain4.webm",
+  "media/pain5.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/pain5.webm",
+  "media/pain6.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/pain6.webm",
+  "media/pain7.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/pain7.webm",
+  "media/pain8.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/pain8.webm",
+  "media/pain9.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/pain9.webm",
+  "media/pause.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/pause.webm",
+  "media/siyirma.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/siyirma.webm",
+  "media/snowhit.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/snowhit.webm",
+  "media/start.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/start.webm",
+  "media/swoh.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/swoh.webm",
+  "media/tap.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/tap.webm",
+  "media/twpsound.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/twpsound.webm",
+  "media/winower1.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/winower1.webm",
+  "media/winower2.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/winower2.webm",
+  "media/winower3.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/winower3.webm",
+  "media/winower4.webm": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/media/winower4.webm",
+  "scripts/c3runtime.js": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/scripts/c3runtime.js",
+  "scripts/dispatchworker.js": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/scripts/dispatchworker.js",
+  "scripts/jobworker.js": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/scripts/jobworker.js",
+  "scripts/main.js": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/scripts/main.js",
+  "scripts/offlineclient.js": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/scripts/offlineclient.js",
+  "scripts/project/scriptsInEvents.js": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/scripts/project/scriptsInEvents.js",
+  "style.css": "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/style.css"
+};
+</script>
+
+<script>
+(function () {
+  function noop() {}
+  function ok(v) { return function () { return Promise.resolve(v); }; }
+
+  var player = {
+    getUniqueID: function () { return 'local'; },
+    getName: function () { return 'Player'; },
+    getPhoto: function () { return ''; },
+    getMode: function () { return 'lite'; },
+    getData: function () { var d = {}; try { d = JSON.parse(localStorage.getItem('sab_save') || '{}'); } catch (e) {} return Promise.resolve(d); },
+    setData: function (d) { try { localStorage.setItem('sab_save', JSON.stringify(d || {})); } catch (e) {} return Promise.resolve(); },
+    getStats: ok({}), setStats: ok(), incrementStats: ok({}),
+    signIn: function () { return Promise.reject(new Error('no auth')); }
+  };
+
+  function advCall(o, name, arg) {
+    try { if (o && o.callbacks && typeof o.callbacks[name] === 'function') o.callbacks[name](arg); } catch (e) {}
+  }
+
+  window.ysdk = {
+    environment: { app: { id: 'local' }, browser: { lang: 'en' }, i18n: { lang: 'en', tld: 'com' }, payload: null },
+    deviceInfo: { type: 'desktop', isDesktop: function () { return true; }, isMobile: function () { return false; },
+                  isTablet: function () { return false; }, isTV: function () { return false; } },
+    adv: {
+      showFullscreenAdv: function (o) { setTimeout(function () { advCall(o, 'onClose', false); }, 0); },
+      showRewardedVideo: function (o) { setTimeout(function () { advCall(o, 'onOpen'); advCall(o, 'onRewarded'); advCall(o, 'onClose'); }, 0); },
+      showBannerAdv: ok({ reason: 'unknown' }), hideBannerAdv: ok({}),
+      getBannerAdvStatus: ok({ stickyAdvIsShowing: false })
+    },
+    features: { LoadingAPI: { ready: noop }, GameplayAPI: { start: noop, stop: noop },
+                GamesAPI: { getAllGames: ok({ games: [] }), getGameByID: ok({}) } },
+    screen: { fullscreen: { status: 'off', request: ok(), exit: ok() } },
+    getPlayer: ok(player),
+    getLeaderboards: ok({ getLeaderboardDescription: ok({}),
+      getLeaderboardPlayerEntry: function () { return Promise.reject(new Error('no entry')); },
+      getLeaderboardEntries: ok({ entries: [] }), setLeaderboardScore: ok() }),
+    getPayments: ok({ purchase: ok({}), getPurchases: ok([]), getCatalog: ok([]), consumePurchase: ok() }),
+    getStorage: ok(window.localStorage), getFlags: ok({}), isAvailableMethod: ok(false),
+    clipboard: { writeText: ok() },
+    shortcut: { canShowPrompt: ok({ canShow: false }), showPrompt: ok({ outcome: 'rejected' }) },
+    feedback: { canReview: ok({ value: false }), requestReview: ok({ feedbackSent: false }) },
+    EVENTS: {}, on: noop, off: noop, dispatchEvent: noop
+  };
+  window.YaGames = { init: function () { return Promise.resolve(window.ysdk); } };
+  window.getWebsite_URL = function () { return '//classroom.google.com'; };
+  window.initSDK = noop;
+})();
+</script>
+
+<script>
+(function () {
+  var F = window.GAME_FILES;
+  var boot = document.getElementById('boot');
+  var txt  = document.getElementById('boottxt');
+  var fill = document.getElementById('bootfill');
+  var shown = 0;
+
+  function setPct(p) {
+    p = Math.max(0, Math.min(100, p | 0));
+    if (p < shown) return;
+    shown = p; fill.style.width = p + '%'; txt.textContent = 'LOADING ' + p + '%';
+  }
+  function fail(m) { boot.classList.add('err'); txt.textContent = m; fill.style.width = '100%'; }
+
+  var KEYS = Object.keys(F).sort(function (a, b) { return b.length - a.length; });
+
+  function lookup(raw) {
+    var u = String(raw || '');
+    if (!u || /^(blob:|data:)/i.test(u)) return null;
+    var p = u.split('#')[0].split('?')[0];
+    for (var i = 0; i < KEYS.length; i++) {
+      var k = KEYS[i];
+      if (p === k || p.slice(-(k.length + 1)) === '/' + k) return F[k];
+    }
+    return null;
+  }
+
+  var link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = F['style.css'];
+  document.head.appendChild(link);
+
+  var DB = 'sab_assets', STORE = 'f', TTL = 30 * 24 * 60 * 60 * 1000;
+  var dbp = null, cacheOn = !!window.indexedDB;
+
+  function db() {
+    if (!cacheOn) return Promise.resolve(null);
+    return dbp || (dbp = new Promise(function (res) {
+      var rq;
+      try { rq = indexedDB.open(DB, 1); } catch (e) { cacheOn = false; return res(null); }
+      rq.onupgradeneeded = function () { try { rq.result.createObjectStore(STORE); } catch (e) {} };
+      rq.onsuccess = function () { res(rq.result); };
+      rq.onerror = function () { cacheOn = false; res(null); };
+    }));
+  }
+  function cGet(k) {
+    return db().then(function (d) {
+      if (!d) return null;
+      return new Promise(function (res) {
+        try {
+          var r = d.transaction(STORE, 'readonly').objectStore(STORE).get(k);
+          r.onsuccess = function () { var v = r.result; res(v && v.b && (Date.now() - v.t) < TTL ? v : null); };
+          r.onerror = function () { res(null); };
+        } catch (e) { res(null); }
+      });
+    }).catch(function () { return null; });
+  }
+  function cPut(k, buf, type) {
+    return db().then(function (d) {
+      if (!d) return;
+      try { d.transaction(STORE, 'readwrite').objectStore(STORE).put({ b: buf, c: type || '', t: Date.now() }, k); } catch (e) {}
+    }).catch(function () {});
+  }
+  (function () {
+    db().then(function (d) {
+      if (!d) return;
+      try {
+        var cur = d.transaction(STORE, 'readwrite').objectStore(STORE).openCursor();
+        cur.onsuccess = function () {
+          var c = cur.result; if (!c) return;
+          var v = c.value;
+          if (!v || !v.t || (Date.now() - v.t) >= TTL) { try { c.delete(); } catch (e) {} }
+          c.continue();
+        };
+      } catch (e) {}
+    });
+  })();
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persisted().then(function (o) { if (!o) navigator.storage.persist(); }); } catch (e) {}
+
+  var PIX = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+  function pngPixel() {
+    var raw = atob(PIX), u8 = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) u8[i] = raw.charCodeAt(i);
+    return new Response(u8, { status: 200, headers: { 'Content-Type': 'image/png' } });
+  }
+
+  var _fetch = window.fetch.bind(window);
+
+  window.fetch = function (input, init) {
+    var url = typeof input === 'string' ? input : (input && input.url) || '';
+    if (/icons\/[^\/]*\.png$/i.test(url)) return Promise.resolve(pngPixel());
+    if (/appmanifest\.json$/i.test(url))
+      return Promise.resolve(new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } }));
+    var hit = lookup(url);
+    if (!hit || (init && init.method && init.method !== 'GET')) return _fetch(hit || input, init);
+    var key = hit;
+    return cGet(key).then(function (c) {
+      if (c) return new Response(c.b, { status: 200, headers: c.c ? { 'Content-Type': c.c } : {} });
+      return _fetch(hit, init).then(function (r) {
+        if (!r.ok) return r;
+        var type = r.headers.get('content-type') || '';
+        return r.clone().arrayBuffer().then(function (b) { cPut(key, b, type); return r; }, function () { return r; });
+      });
+    }).catch(function () { return _fetch(hit, init); });
+  };
+
+  try {
+    var XP = XMLHttpRequest.prototype, _xopen = XP.open;
+    XP.open = function (m, u) { var h = lookup(u); if (h) arguments[1] = h; return _xopen.apply(this, arguments); };
+  } catch (e) {}
+
+  function loadScript(url, mod) {
+    return new Promise(function (res, rej) {
+      var s = document.createElement('script');
+      if (mod) s.type = 'module';
+      s.src = url;
+      s.onload = function () { res(); };
+      s.onerror = function () { rej(new Error('could not load ' + url.split('/').pop())); };
+      document.body.appendChild(s);
+    });
+  }
+
+  var creep = setInterval(function () { setPct(shown + 1); }, 220);
+  setPct(2);
+
+  loadScript(F['box2d.wasm.js']).then(function () {
+    setPct(25);
+    return loadScript(F['scripts/offlineclient.js'], true);
+  }).then(function () {
+    setPct(35);
+    return loadScript(F['scripts/main.js'], true);
+  }).then(function () {
+    setPct(55);
+    if (!self.RuntimeInterface) throw new Error('runtime missing');
+    window['C3_IsSupported'] = true;
+    window['c3_runtimeInterface'] = new self.RuntimeInterface({
+      useWorker: false,
+      workerMainUrl: 'workermain.js',
+      engineScripts: [F['scripts/c3runtime.js']],
+      projectScripts: [[F['scripts/project/scriptsInEvents.js']]],
+      mainProjectScript: '',
+      scriptFolder: 'scripts/',
+      workerDependencyScripts: [],
+      exportType: 'html5',
+      runtimeBaseUrl: "https://cdn.jsdelivr.net/gh/tyuuunicorn/cdn@main/"
+    });
+    var hide = setInterval(function () {
+      if (document.querySelector('canvas')) {
+        clearInterval(hide); clearInterval(creep); setPct(100);
+        setTimeout(function () { boot.classList.add('gone'); }, 450);
+      }
+    }, 150);
+    setTimeout(function () { clearInterval(hide); clearInterval(creep); boot.classList.add('gone'); }, 40000);
+  }).catch(function (e) {
+    clearInterval(creep);
+    fail('The game could not start. ' + (e && e.message ? e.message : ''));
+  });
+})();
+</script>
+<!-- Sticky Bottom Center Ad (728x90) with Smooth Slide-Out and Reappearance -->
+<style>
+  /* Container: Bottom center, fixed, with overflow hidden */
+  #ad-container {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(728px, calc(100% - 20px)); /* 728px, 10px margin on mobile */
+    height: 90px;
+    background: rgba(0, 0, 0, 0.90);
+    display: none;
+    z-index: 99999;
+    border-radius: 0; /* Sharp corners */
+    overflow: hidden;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.45);
+    box-sizing: border-box;
+    transition: transform 0.5s ease-in-out; /* Smooth slide-in/out animation */
+  }
+
+  /* Slide-out animation */
+  #ad-container.hidden {
+    transform: translate(-50%, 100%); /* Slide down out of view */
+  }
+
+  #ad-iframe {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 745px; /* Updated width */
+    height: 90px; /* Updated height */
+    border: 0;
+    display: block;
+    overflow: hidden;
+    pointer-events: auto;
+    box-sizing: content-box;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  #ad-iframe::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  /* Close button with arrow */
+  #close-ad {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    background: #ff4d4d;
+    color: #fff;
+    border: none;
+    padding: 5px 9px;
+    font-size: 13px;
+    border-radius: 4px;
+    cursor: not-allowed;
+    opacity: 0.72;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+  }
+  #close-ad.enabled {
+    cursor: pointer;
+    opacity: 1;
+  }
+  #close-ad::before {
+    content: '↓'; /* Down arrow for bottom ad */
+    margin-right: 4px;
+  }
+
+  /* Right mask for scrollbar */
+  #ad-right-mask {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 12px;
+    height: 100%;
+    pointer-events: none;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.9));
+    z-index: 99999;
+  }
+
+  /* Mobile adjustments */
+  @media (max-width: 440px) {
+    #ad-container {
+      width: calc(100% - 12px);
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 0; /* Sharp corners on mobile */
+    }
+    #ad-iframe {
+      width: 728px;
+    }
+  }
+</style>
+
+<div id="ad-container" aria-hidden="true" role="dialog" aria-label="Advertisement">
+  <iframe
+    id="ad-iframe"
+    src="https://script.google.com/macros/s/AKfycbw60Tp6nuqThxAuU8ZN1JIuPtjHoW2Uqq3fQy0CvrycN0O2AQwhRT5EDv73hh2FhXEF/exec"
+    width="768px"
+    height="95px"
+    scrolling="no"
+    frameborder="0"
+    sandbox="allow-scripts allow-popups allow-same-origin"
+  ></iframe>
+  <button id="close-ad" disabled>Close (12)</button>
+  <div id="ad-right-mask"></div>
+</div>
+
+<script>
+  (function () {
+    const showDelay = 2000; // 2 seconds delay before first show
+    const countdownStart = 12; // 12 seconds countdown
+    const reappearDelay = 150000; // 25 seconds before reappearance
+    const adContainer = document.getElementById('ad-container');
+    const closeBtn = document.getElementById('close-ad');
+
+    function showAd() {
+      // Show ad with smooth slide-in
+      adContainer.style.display = 'block';
+      adContainer.classList.remove('hidden');
+      adContainer.setAttribute('aria-hidden', 'false');
+
+      // Start countdown
+      let timeLeft = countdownStart;
+      closeBtn.textContent = `Close (${timeLeft})`;
+      closeBtn.disabled = true;
+      closeBtn.classList.remove('enabled');
+
+      const t = setInterval(() => {
+        timeLeft--;
+        if (timeLeft > 0) {
+          closeBtn.textContent = `Close (${timeLeft})`;
+        } else {
+          clearInterval(t);
+          closeBtn.disabled = false;
+          closeBtn.classList.add('enabled');
+          closeBtn.textContent = 'Close ↓';
+        }
+      }, 1000);
+    }
+
+    // Initial ad show
+    setTimeout(showAd, showDelay);
+
+    // Close with animation and schedule reappearance
+    closeBtn.addEventListener('click', () => {
+      if (closeBtn.disabled) return;
+      adContainer.classList.add('hidden');
+      adContainer.setAttribute('aria-hidden', 'true');
+      // Schedule reappearance without removing or reloading iframe
+      setTimeout(showAd, reappearDelay);
+    });
+  })();
+</script>
+</body>
+</html>
+
+
+]]></Content>
+</Module>
